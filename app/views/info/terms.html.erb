@@ -1,0 +1,120 @@
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title> Athena </title>
+<link rel="SHORTCUT ICON" href="athena.ico"/>
+
+<%= stylesheet_link_tag("main") %>
+
+</head>
+
+<body>
+<div class="header">
+<table align="left" border="0" cellspacing="0" cellpadding="1">
+<tr>
+<td>
+	Follow us on: 
+</td>
+<td>
+	<a href=http://twitter.com/athenabooks> Twitter <img src="images/twitter.png" class="texttop" /><a/> 
+</td>
+</tr>
+</table>
+
+<table align="right" border="0" cellspacing="0" cellpadding="1">
+<tr>	
+	<td id="fader">
+		<%- flash.each do |name, msg| -%>
+			<%= content_tag :div, msg, :id => "flash_#{name}" %>
+		<%- end -%>
+	</td>
+
+	<% if current_user %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>		
+		<td>
+			<%= link_to "Logout", logout_path %>
+		</td>
+	<% else %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>	
+		<td>
+			<%= link_to "Register", new_user_path %> | 
+		</td>
+		<td>
+			<%= link_to "Login", login_path %>
+		</td>
+	<% end %>
+<td>
+	<!-- AddThis Button BEGIN -->
+	<div class="addthis_toolbox addthis_default_style ">
+		<a href="http://www.addthis.com/bookmark.php?v=250&amp;username=xa-4cf2b3af0987a03e" class="addthis_button_compact">Share</a>
+		<span class="addthis_separator">|</span>
+			<a class="addthis_button_preferred_1"></a>
+			<a class="addthis_button_preferred_2"></a>
+			<a class="addthis_button_preferred_3"></a>
+			<a class="addthis_button_preferred_4"></a>
+	</div>
+	<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4cf2b3af0987a03e"></script>
+ 	<!-- AddThis Button END -->
+</td>
+</tr>
+</table>
+</div>
+<p>
+<div class="box">
+	<h1>Terms of Use</h1>
+</div>
+<p>
+
+<div class="box">
+<h2> Content </h2>
+<p>Our books are free and open to the public. Anyone can read our books and reproduce their content</p>
+
+<h2> Forums </h2>
+<p>Our Forums are provided for the enjoyment of all members so please be respectful. Just a few reminders to help all members have a enjoyable experience.</p>
+
+<ul>
+
+	<li>Read the forums rules and guidelines before posting for the first time.</li>
+	<li>Search the other posts to see if your topic is already covered.</li>
+	<li>Use a meaningful title for your thread.</li>
+	<li>Do not use a forum to promote your product, service or business.</li>
+	<li>Be civil. Personal differences should be handled through email or IM and not through posts displayed to everyone.</li>
+	<li>Stay on topic.</li>
+	<li>Ignore spammers, respond to them personally and not through the board, or report them.</li>
+	<li>In order to be understood by most people, use correct spelling, grammar and avoid slang unless you know the word or phrase will be understood by other members.</li>
+	<li>Do not use all caps or SHOUT in your posts. In addition, one exclamation point is enough.</li>
+	<li>Do not use someone else’s thread for a private conversation.</li>
+	<li>Warez, cracks or illegal downloading of software and similar topics are prohibited</li>
+	<li>Watch your sense of humor, posts may be read by people from a variety of backgrounds and ages.</li>
+	<li>Write concisely and do not ramble.</li>
+	<li>Do not chastise newbies.</li>
+
+</ul>
+
+<h2> System </h2>
+<p>Our website is provided free to all. Do not tamper with the website design or backend software in any manner.</p>
+</div>
+
+<div class="footer">
+	<table align="center" border="0" cellspacing="0" cellpadding="1">
+		<tr>
+			<td>
+				  &copy; 2010 Athena - free books for all of the world since 2010. <%= link_to "Privacy Policy", privacy_path %> | <%= link_to "Terms of Use", terms_path %>
+			</td>
+		</tr>
+	</table>
+</div>
+
+</body>
+</html>

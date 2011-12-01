@@ -1,0 +1,181 @@
+<%
+  require 'rexml/document'
+  book = params[:bookTitle]
+  chapter = params[:chapterNumber]
+  username = params[:username]
+
+  ####initializes bookMatch, bookTitle, chapterFiles
+  file1 = File.new("public/books/books.xml")
+  doc1 = REXML::Document.new(file1)
+  bookIndex = doc1.root
+  chapterFiles = Hash.new
+  bookTitle = ""
+  bookMatch = false
+  permissionMatch = false
+  bookIndex.each_element('book') do |books|
+    if books.attributes['name'].delete(' ') == book
+      books.each_element('chapter') do |chapters|
+        chapterFile = File.new(chapters.attributes['location'])
+        chapterDoc = REXML::Document.new(chapterFile)
+        root = chapterDoc.root
+        chapterFiles[chapters.attributes['number']] = root
+      end
+      chapterFiles.sort
+      bookMatch = true
+      bookTitle = books.attributes['name']
+    end
+  end
+
+  ####Determine if Chapter Exist, and Stores Its Title and Body if it Exist
+  chapterTitle = ''
+  chapterMatch = false
+  chapterBody  = ''
+  userHash = Hash.new
+  chapterFiles.each_value do |chapterRoot|
+    chapterRoot.each_element('chapter') do |check|
+      if check.attributes['number'] == chapter
+        counter=0
+        check.elements['editors'].each_element('user') do |user|
+          if user.attributes['id'] == current_user.username
+            permissionMatch = true
+          end
+          userHash[counter.to_s()] = user.attributes['id']
+          counter += 1
+        end
+        chapterTitle = check.attributes['title']
+        chapterMatch = true
+        check.elements['body'].each_element('section') do |sections|
+          chapterBody += '<h3>' + sections.attributes['title'] + '</h3>'
+          chapterBody += sections.text + '<br><br>'
+        end
+      end
+    end
+  end
+  
+%>
+
+<%= stylesheet_link_tag("main") %>
+<script type="text/javascript" src="javascripts/jquery.js"></script>
+
+
+
+<head><title>List of Books</title><link rel="SHORTCUT ICON" href="/athena.ico"/></head>
+<div class="header">
+<table align="left" border="0" cellspacing="0" cellpadding="1">
+<tr>
+<td>
+	Follow us on: 
+</td>
+<td>
+	<a href=http://twitter.com/athenabooks> Twitter <img src="/images/twitter.png" class="texttop" /><a/> 
+</td>
+</tr>
+</table>
+
+<table align="right" border="0" cellspacing="0" cellpadding="1">
+<tr>	
+	<td id="fader">
+		<%- flash.each do |name, msg| -%>
+			<%= content_tag :div, msg, :id => "flash_#{name}" %>
+		<%- end -%>
+	</td>
+
+	<% if current_user %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>		
+		<td>
+			<%= link_to "Logout", logout_path %>
+		</td>
+	<% else %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>	
+		<td>
+			<%= link_to "Register", new_user_path %> | 
+		</td>
+		<td>
+			<%= link_to "Login", login_path %>
+		</td>
+	<% end %>
+<td>
+	<!-- AddThis Button BEGIN -->
+
+	<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4cf2b3af0987a03e"></script>
+ 	<!-- AddThis Button END -->
+</td>
+</tr>
+</table>
+</div>
+<Br>
+<div class= "boxbruce">
+
+<h1 align="center">User Permissions</h1>
+
+<%=  ####Print Book Titles
+chapterTitles = '<h2>Books</h2>'
+begin
+  if count != 0 && current_user.username
+    userHash.each_value do |userhash|
+      chapterTitles += '<a href="javascript:deleteUser(' + "'" + userhash + "'" + ');">Delete</a>&nbsp;&nbsp;&nbsp;&nbsp;'+userhash
+    end
+  end
+rescue Exception
+ chapterTitles = 'Must be a user to view this page'
+end
+if chapterTitles == '<h2>Books</h2>'
+  chapterTitles = 'There are no users.'
+end
+if current_user.username
+  chapterTitles += '<br><br>Add New Creator:<br>'
+  chapterTitles += '<form name="newUser" action="/create/user" method="post">'
+  chapterTitles += '<input type="text" name="name" />Username<br>'
+  chapterTitles += '<input type="hidden" name="username" value="' + current_user.username + '"/>'
+  chapterTitles += '<input type="submit" value="Submit" /></form>'
+end
+
+chapterTitles 
+%>
+
+
+
+</div>
+
+
+
+
+
+<script type="text/javascript">
+
+function deleteUser(userhash){
+  chapterBody  = "<input type=\"hidden\" name=\"userhash\" value=\"" + userhash + "\" />"
+  chapterBody += "<input type=\"hidden\" name=\"username\" value=\"<%=current_user.username%>\" />"
+  $(chapterBody).insertAfter("#formAdd")
+  document.deleteUserForm.submit();
+}
+</script>
+
+
+<div id="formwrapper">
+<form action="/delete/user" method="post" name="deleteUserForm">
+<div id="formAdd"></div>
+</form>
+</div>
+
+<br>
+<div class="footer">
+	<table align="center" border="0" cellspacing="0" cellpadding="1">
+		<tr>
+			<td>
+				 &copy; 2010 Athena - free books for all of the world since 2010. <%= link_to "Privacy Policy", privacy_path %> | <%= link_to "Terms of Use", terms_path %>
+			</td>
+		</tr>
+	</table>
+</div>
+

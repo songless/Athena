@@ -1,0 +1,417 @@
+<%
+  require 'rexml/document'
+  book = params[:bookNames]
+  chapter = params[:chapter]
+  
+  ####initializes bookMatch, bookTitle, chapterFiles
+  file1 = File.new("public/books/books.xml")
+  doc1 = REXML::Document.new(file1)
+  bookIndex = doc1.root
+  chapterFiles = Hash.new
+  bookTitle = ""
+  bookMatch = false
+  bookIndex.each_element('book') do |books|
+    if books.attributes['name'].delete(' ') == book
+      books.each_element('chapter') do |chapters|
+        chapterFile = File.new(chapters.attributes['location'])
+        chapterDoc = REXML::Document.new(chapterFile)
+        root = chapterDoc.root
+        chapterFiles[chapters.attributes['number']] = root
+      end
+      chapterFiles.sort
+      bookMatch = true
+      bookTitle = books.attributes['name']
+    end
+  end
+
+  
+
+  ####Determine if Chapter Exist, and Stores Its Title and Body if it Exist
+  chapterTitle = ''
+  chapterMatch = false
+  chapterBody  = ''
+  chapterFiles.each_value do |chapterRoot|
+    chapterRoot.each_element('chapter') do |check|
+      if check.attributes['number'] == chapter
+        chapterTitle = check.attributes['title']
+        chapterMatch = true
+        check.elements['body'].each_element('section') do |sections|
+          chapterBody += '<h3>' + sections.attributes['title'] + '</h3>'
+          chapterBody += sections.text + '<br><br>'
+        end
+      end
+    end
+  end
+ %>
+
+
+
+<%= stylesheet_link_tag("main") %>
+
+
+<head><title><%= bookTitle %></title><link rel="SHORTCUT ICON" href="/athena.ico"/></head>
+<div class="header">
+<table align="left" border="0" cellspacing="0" cellpadding="1">
+<tr>
+<td>
+	Follow us on: 
+</td>
+<td>
+	<a href=http://twitter.com/athenabooks> Twitter <img src="/images/twitter.png" class="texttop" /><a/> 
+</td>
+</tr>
+</table>
+
+<table align="right" border="0" cellspacing="0" cellpadding="1">
+<tr>	
+	<td id="fader">
+		<%- flash.each do |name, msg| -%>
+			<%= content_tag :div, msg, :id => "flash_#{name}" %>
+		<%- end -%>
+	</td>
+
+	<% if current_user %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>		
+		<td>
+			<%= link_to "Logout", logout_path %>
+		</td>
+	<% else %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>	
+		<td>
+			<%= link_to "Register", new_user_path %> | 
+		</td>
+		<td>
+			<%= link_to "Login", login_path %>
+		</td>
+	<% end %>
+<td>
+	<!-- AddThis Button BEGIN -->
+
+	<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4cf2b3af0987a03e"></script>
+ 	<!-- AddThis Button END -->
+</td>
+</tr>
+</table>
+</div>
+<Br>
+<div class="boxbruce" style="width: 600px;">
+
+<%=  ####Print Book Name
+if bookMatch
+  output = '<h1 align="center">'+bookTitle+'</h1>'
+else
+  output = "Book Does Not Exist"
+end
+output
+%>
+
+<%=  ####Print Chapter Title
+if chapterMatch && bookMatch
+  output = '<h2 align="center">'+chapterTitle+'</h2>'
+elsif bookMatch
+  output = "Chapter Does Not Exist"
+else
+  output = ''
+end
+output
+%>
+
+<%=  ####Print Chapter Body
+if chapterMatch && bookMatch
+  output = chapterBody
+else
+  output = ''
+end
+output
+%>
+
+<%=  ####Print Previous/Next Button
+previousMatch = false
+nextMatch = false
+output = "<br><br>"
+if chapterMatch && bookMatch
+  chapterFiles.each_value do |chapterRoot|
+    chapterRoot.each_element('chapter') do |check|
+      if check.attributes['number'].to_i == (chapter.to_i)-1
+        previousMatch = true
+      elsif check.attributes['number'].to_i == (chapter.to_i)+1
+        nextMatch = true
+      end
+    end
+  end
+end
+output += '<div align="center">'
+if previousMatch
+  output += '<a href="/books/' + book + '/' + ((chapter.to_i)-1).to_s + '">&lt; Previous Chapter</a>'
+end
+if nextMatch
+  output += '&nbsp;&nbsp;<a href="/books/' + book + '/' + ((chapter.to_i)+1).to_s + '">Next Chapter &gt;</a>'
+end
+output += '</div>'
+%>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+<div class="footer">
+	<table align="center" border="0" cellspacing="0" cellpadding="1">
+		<tr>
+			<td>
+				 &copy; 2010 Athena - free books for all of the world since 2010. <%= link_to "Privacy Policy", privacy_path %> | <%= link_to "Terms of Use", terms_path %>
+			</td>
+		</tr>
+	</table>
+</div>
+
+<div id="fixeddiv" style="
+    position:absolute; color:#000000;
+    width:200px;left:640px;top:53px;
+    padding:12px;background:#FFFFFF;
+    border-radius: 15px; -moz-border-radius: 15px;">
+
+<%=  ####Print Chapter Titles and link to them
+chapterTitles = '<a href="/books/'+book+'"><h3>Table Of Contents</h3></a>'
+if bookMatch
+  chapterFiles.each_value do |chapterRoot|
+    chapterRoot.each_element('chapter') do |check|
+      chapterNumber = check.attributes['number'] + '. '
+      if chapterNumber == '0. '
+        chapterNumber = ''
+      end
+      chapterTitles += '<a href="/books/' + book + '/' + check.attributes['number'] + '">' + chapterNumber + check.attributes['title'] + '</a><br>'
+    end
+  end
+else
+  chapterTitles = ''
+end
+if chapterTitles == '<h2>Chapters</h2>'
+  chapterTitles = 'This book has no chapters.'
+end
+chapterTitles += '<br>'
+%>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<!--Used for displaying table of contents-->
+<script type="text/javascript"><!--
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'fixeddiv';
+
+var fixedMenu = 
+{
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function()
+{
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0)
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    else
+    {
+        fixedMenu.shiftX += 
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0)
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    else
+    {
+        fixedMenu.shiftY += 
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function()
+{
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY)
+    {
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers)
+        {
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }
+        else
+        {
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function()
+{
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler)
+{
+    if(typeof element[listener] != 'function' || 
+       typeof element[listener + '_num'] == 'undefined')
+    {
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function')
+        {
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e)
+        {
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function()
+{
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null 
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function()
+{
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob = 
+            document.layers 
+            ? fixedMenu.menu 
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+//--></script>
+
+
+

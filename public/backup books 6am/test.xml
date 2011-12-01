@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<book name="Awesome Sauce" author="Bruce" isbn="123">
+
+  <editors>
+    <user id="1"/>
+    <user id="4"/>
+    <user id="2"/>
+  </editors>
+
+
+  <chapter title="Foreword" number="0">
+    <body>
+      <section title="">
+        This is the foreword
+      </section>
+    </body>
+  </chapter>
+
+  <chapter title="Goodness" number="1">
+    <body>
+      <section title=":(">
+        this is a section dedicated to my anger
+      </section>
+      <section title="asdf">
+        this &lt;b&gt;book&lt;/b&gt; is really good and stuff
+      </section>
+      <section title="blah">
+        secasdf 2
+      </section>
+    </body>
+  </chapter>
+
+  <chapter title="Gracious" number="2">
+    <body>
+      <section title="hi">
+        getting better
+      </section>
+    </body>
+  </chapter>
+
+  <chapter title="Yay" number="3">
+    <body>
+      <section title="asdfadsf">
+        please be done
+      </section>
+    </body>
+  </chapter>
+
+</book>

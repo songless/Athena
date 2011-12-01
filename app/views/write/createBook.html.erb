@@ -1,0 +1,113 @@
+<%
+require 'rexml/document'
+count = 0;
+title = params[:title]
+title.gsub(/'/,'&39;')
+title.gsub(/"/,'&34;')
+title.gsub(/</,'&60;')
+title.gsub(/>/,'&62;')
+title.gsub(/\\/,'&92;')
+title.gsub(/\//,'&47;')
+isbn = params[:isbn]
+isbn.gsub(/'/,'&39;')
+isbn.gsub(/"/,'&34;')
+isbn.gsub(/</,'&60;')
+isbn.gsub(/>/,'&62;')
+isbn.gsub(/\\/,'&92;')
+isbn.gsub(/\//,'&47;')
+thumbnail = params[:thumbnail]
+thumbnail.gsub(/'/,'&39;')
+thumbnail.gsub(/"/,'&34;')
+thumbnail.gsub(/</,'&60;')
+thumbnail.gsub(/>/,'&62;')
+thumbnail.gsub(/\\/,'&92;')
+thumbnail.gsub(/\//,'&47;')
+username = params[:username]
+username.gsub(/'/,'&39;')
+username.gsub(/"/,'&34;')
+username.gsub(/</,'&60;')
+username.gsub(/>/,'&62;')
+username.gsub(/\\/,'&92;')
+username.gsub(/\//,'&47;')
+correctParams = true
+if title.length == 0 || isbn.length == 0 || thumbnail.length == 0 || username.length ==0
+  correctParams = false
+end
+
+correctUser = false
+if current_user.username == username
+  correctUser = true
+end
+
+
+file1 = File.new("public/books/books.xml")
+doc1 = REXML::Document.new(file1)
+bookIndex = doc1.root
+
+bookNotExist = true
+bookIndex.each_element('book') do |books|
+  if books.attributes['name'] == title
+    bookNotExist = false
+  end
+end
+
+
+if correctUser && correctParams && bookNotExist
+  book = REXML::Element.new("book")
+  book.add_attribute('name', title)
+  book.add_attribute('author', username)    
+  book.add_attribute('thumbnail', thumbnail)  
+  book.add_attribute('isbn', isbn)  
+  bookIndex.elements["//library"].add(book)
+  editors = REXML::Element.new("editors")
+  user = REXML::Element.new("user")
+  user.add_attribute('id',username)
+  editors.add(user)
+  book.add(editors)
+  begin
+   (FileUtils.mkdir('public/books/'+title.delete(' '), :mode => 0777))
+  rescue Exception
+  end
+  file = File.new("public/books/books.xml","w")
+  formatter = REXML::Formatters::Default.new
+  formatter.write(doc1,file)
+  file.close
+end
+%>
+
+
+
+<html> 
+<head> 
+<script type="text/javascript"> 
+<!--
+function redirect(){
+	//document.location = "/edit"
+}
+//-->
+</script> 
+</head> 
+<body onLoad="create()"></body> 
+
+<%=
+  chapterTitles  = '<form name="newChapter" action="/create/newChapter/' + title.delete(' ') + '" method="post">'
+  chapterTitles += '<input type="hidden" name="title" value="Foreword" />'
+  chapterTitles += '<input type="hidden" name="username" value="' + current_user.username + '"/></form>'
+#  chapterTitles += '<input type="submit" value="Submit" /></form>'
+  chapterTitles
+%>
+
+<script type="text/javascript">
+
+function create(){
+  document.newChapter.submit();
+}
+</script>
+
+</html>
+
+
+
+
+
+

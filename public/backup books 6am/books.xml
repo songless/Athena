@@ -1,0 +1,150 @@
+<?xml version='1.0'?>
+
+<library>
+
+  <book name='Awesome Sauce' author='bbev08' isbn='8008' thumbnail='images/book-blue.png'>
+
+
+    <editors>
+      <user id='bbev08'/>
+      <user id='4'/>
+      <user id='2'/>
+    </editors>
+
+
+    <chapter number='0' location='public/books/AwesomeSauce/0.xml'/>
+    
+    
+    
+
+  <chapter number='1' location='public/books/AwesomeSauce/1.xml'/></book>
+
+
+  <book name='Numero dos' author='bbev08' isbn='8008' thumbnail='images/book-blue.png'>
+
+
+
+    <editors>
+      <user id='1'/>
+      <user id='bbev08'/>
+      <user id='2'/>
+    </editors>
+
+
+    <chapter number='0' location='public/books/AwesomeSauce/0.xml'/>
+    <chapter number='1' location='public/books/AwesomeSauce/1.xml'/>
+    <chapter number='2' location='public/books/AwesomeSauce/2.xml'/>
+    <chapter number='3' location='public/books/AwesomeSauce/3.xml'/>
+
+  </book>
+
+
+  <book name='Numero 0' author='Bruce' isbn='8008' thumbnail='images/book-blue.png'>
+
+
+
+    <editors>
+      <user id='1'/>
+      <user id='4'/>
+      <user id='2'/>
+    </editors>
+
+
+    <chapter number='0' location='public/books/AwesomeSauce/0.xml'/>
+    <chapter number='1' location='public/books/AwesomeSauce/1.xml'/>
+    <chapter number='2' location='public/books/AwesomeSauce/2.xml'/>
+    <chapter number='3' location='public/books/AwesomeSauce/3.xml'/>
+
+  </book>
+
+  <book name='Numero 1' author='Bruce' isbn='8008' thumbnail='images/book-blue.png'>
+
+
+
+    <editors>
+      <user id='1'/>
+      <user id='4'/>
+      <user id='2'/>
+    </editors>
+
+
+    <chapter number='0' location='public/books/AwesomeSauce/0.xml'/>
+    <chapter number='1' location='public/books/AwesomeSauce/1.xml'/>
+    <chapter number='2' location='public/books/AwesomeSauce/2.xml'/>
+    <chapter number='3' location='public/books/AwesomeSauce/3.xml'/>
+
+  </book>
+
+  <book name='Numero 2' author='Bruce' isbn='8008' thumbnail='images/book-blue.png'>
+
+
+
+    <editors>
+      <user id='1'/>
+      <user id='4'/>
+      <user id='2'/>
+    </editors>
+
+
+    <chapter number='0' location='public/books/AwesomeSauce/0.xml'/>
+    <chapter number='1' location='public/books/AwesomeSauce/1.xml'/>
+    <chapter number='2' location='public/books/AwesomeSauce/2.xml'/>
+    <chapter number='3' location='public/books/AwesomeSauce/3.xml'/>
+
+  </book>
+
+  <book name='Numero 3' author='Bruce' isbn='8008' thumbnail='images/book-blue.png'>
+
+
+
+    <editors>
+      <user id='1'/>
+      <user id='4'/>
+      <user id='2'/>
+    </editors>
+
+
+    <chapter number='0' location='public/books/AwesomeSauce/0.xml'/>
+    <chapter number='1' location='public/books/AwesomeSauce/1.xml'/>
+    <chapter number='2' location='public/books/AwesomeSauce/2.xml'/>
+    <chapter number='3' location='public/books/AwesomeSauce/3.xml'/>
+
+  </book>
+
+  <book name='Numero 4' author='Bruce' isbn='8008' thumbnail='images/book-blue.png'>
+
+
+
+    <editors>
+      <user id='1'/>
+      <user id='4'/>
+      <user id='2'/>
+    </editors>
+
+
+    <chapter number='0' location='public/books/AwesomeSauce/0.xml'/>
+    <chapter number='1' location='public/books/AwesomeSauce/1.xml'/>
+    <chapter number='2' location='public/books/AwesomeSauce/2.xml'/>
+    <chapter number='3' location='public/books/AwesomeSauce/3.xml'/>
+
+  </book>
+
+  <book name='Numero 5' author='Bruce' isbn='8008' thumbnail='images/book-blue.png'>
+
+
+
+    <editors>
+      <user id='1'/>
+      <user id='4'/>
+      <user id='2'/>
+    </editors>
+
+
+    <chapter number='0' location='public/books/AwesomeSauce/0.xml'/>
+    <chapter number='1' location='public/books/AwesomeSauce/1.xml'/>
+    <chapter number='2' location='public/books/AwesomeSauce/2.xml'/>
+    <chapter number='3' location='public/books/AwesomeSauce/3.xml'/>
+
+  </book>
+
+<book name='fffff' isbn='f' author='bbev08' thumbnail='f'><editors><user id='bbev08'/></editors><chapter number='0' location='public/books/fffff/0.xml'/></book></library>

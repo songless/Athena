@@ -1,0 +1,19 @@
+<%= stylesheet_link_tag("main") %>
+<script type="text/javascript" src="javascripts/jquery.js"></script>
+
+<div class="box">
+<% title "Registration" %>
+</div>
+
+<div class="box">
+	<%= render :partial => 'form' %>
+</div>
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+
+	$("#flash_notice").slideUp(2000);
+
+});
+</script>

@@ -1,0 +1,171 @@
+<%
+  require 'rexml/document'
+
+  badUser = false
+  begin
+    usernameUser = current_user.username
+  rescue Exception
+    badUser = true
+  end
+  ####initializes bookTitles
+  file1 = File.new("public/books/books.xml")
+  doc1 = REXML::Document.new(file1)
+  bookIndex = doc1.root
+  bookTitles = Hash.new
+  count = 0
+  bookIndex.each_element('book') do |books|
+    books.elements['editors'].each_element('user') do |user|
+      if user.attributes['id'] == usernameUser
+        thisthing = books.attributes['name']
+        thisthing.gsub(/'/,'&39;')
+        thisthing.gsub(/"/,'&34;')
+        thisthing.gsub(/</,'&60;')
+        thisthing.gsub(/>/,'&62;')
+        thisthing.gsub(/\\/,'&92;')
+        thisthing.gsub(/\//,'&47;')
+        bookTitles[count] = thisthing
+      end
+    end
+    count += 1
+  end
+  bookTitles.sort
+  
+%>
+
+<%= stylesheet_link_tag("main") %>
+<script type="text/javascript" src="javascripts/jquery.js"></script>
+
+<%=
+output=""
+if badUser
+  output  = '<script type="text/javascript">'
+  output += 'window.onload = function () {'
+  output += 'document.write("");document.location = "/"} </script>'
+end
+output
+%>
+
+<head><title>List of Books</title><link rel="SHORTCUT ICON" href="/athena.ico"/></head>
+<div class="header">
+<table align="left" border="0" cellspacing="0" cellpadding="1">
+<tr>
+<td>
+	Follow us on: 
+</td>
+<td>
+	<a href=http://twitter.com/athenabooks> Twitter <img src="/images/twitter.png" class="texttop" /><a/> 
+</td>
+</tr>
+</table>
+
+<table align="right" border="0" cellspacing="0" cellpadding="1">
+<tr>	
+	<td id="fader">
+		<%- flash.each do |name, msg| -%>
+			<%= content_tag :div, msg, :id => "flash_#{name}" %>
+		<%- end -%>
+	</td>
+
+	<% if !badUser %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>		
+		<td>
+			<%= link_to "Logout", logout_path %>
+		</td>
+	<% else %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>	
+		<td>
+			<%= link_to "Register", new_user_path %> | 
+		</td>
+		<td>
+			<%= link_to "Login", login_path %>
+		</td>
+	<% end %>
+<td>
+	<!-- AddThis Button BEGIN -->
+
+	<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4cf2b3af0987a03e"></script>
+ 	<!-- AddThis Button END -->
+</td>
+</tr>
+</table>
+</div>
+<Br>
+<div class= "boxbruce">
+
+<h1 align="center">List of Books</h1>
+
+<%=  ####Print Book Titles
+chapterTitles = '<h2>Books</h2>'
+begin
+  if count != 0 && usernameUser 
+    bookTitles.each_value do |bookTitle|
+      bookTitle.gsub(/'/,'&39;')
+      chapterTitles += '<a href="javascript:deleteBook(' + "'" + bookTitle.delete(' ') + "'" + ');">Delete</a>&nbsp;&nbsp;&nbsp;&nbsp;'
+      chapterTitles += '<a href="/edit/' + bookTitle.delete(' ') + '">' + bookTitle + '</a><br>'
+    end
+  end
+rescue Exception
+ chapterTitles = 'Must be a user to view this page'
+end
+if chapterTitles == '<h2>Books</h2>'
+  chapterTitles = 'There are no books.'
+end
+if !badUser
+  chapterTitles += '<br><br>Create New Book:<br>'
+  chapterTitles += '<form name="newBook" action="/create/newBook" method="post">'
+  chapterTitles += '<input type="text" name="title" />Title<br>'
+  chapterTitles += '<input type="text" name="isbn" />ISBN<br>'
+  chapterTitles += '<input type="text" name="thumbnail" />Thumbnail Location<br>'
+  chapterTitles += '<input type="hidden" name="username" value="' + usernameUser  + '"/>'
+  chapterTitles += '<input type="submit" value="Submit" /></form>'
+end
+
+chapterTitles 
+%>
+
+
+
+</div>
+
+
+
+
+
+<script type="text/javascript">
+
+function deleteBook(bookTitle){
+  chapterBody  = "<input type=\"hidden\" name=\"bookTitle\" value=\"" + bookTitle + "\" />"
+  chapterBody += "<input type=\"hidden\" name=\"username\" value=\"<%=usernameUser %>\" />"
+  $(chapterBody).insertAfter("#formAdd")
+  document.deleteBookForm.submit();
+}
+</script>
+
+
+<div id="formwrapper">
+<form action="/delete/oldBook" method="post" name="deleteBookForm">
+<div id="formAdd"></div>
+</form>
+</div>
+
+<br>
+<div class="footer">
+	<table align="center" border="0" cellspacing="0" cellpadding="1">
+		<tr>
+			<td>
+				 &copy; 2010 Athena - free books for all of the world since 2010. <%= link_to "Privacy Policy", privacy_path %> | <%= link_to "Terms of Use", terms_path %>
+			</td>
+		</tr>
+	</table>
+</div>
+

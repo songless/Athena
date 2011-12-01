@@ -1,0 +1,28 @@
+<%= stylesheet_link_tag("main") %>
+<script type="text/javascript" src="javascripts/jquery.js"></script>
+
+<% title "Login" %>
+
+<div class="box">
+<% form_for @user_session do |f| %>
+  <p>
+    <%= f.label :username %><br />
+    <%= f.text_field :username %>
+  </p>
+  <p>
+    <%= f.label :password %><br />
+    <%= f.password_field :password %>
+  </p>
+  <p><%= f.submit %></p>
+<% end %>
+</div>
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+
+	$("#flash_notice").slideUp(2000);
+
+});
+</script>
+

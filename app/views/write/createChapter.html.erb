@@ -1,0 +1,107 @@
+<%
+require 'rexml/document'
+count = 0;
+book = params[:bookNames]
+book.gsub(/'/,'&39;')
+book.gsub(/"/,'&34;')
+book.gsub(/</,'&60;')
+book.gsub(/>/,'&62;')
+book.gsub(/\\/,'&92;')
+book.gsub(/\//,'&47;')
+title = params[:title]
+title.gsub(/'/,'&39;')
+title.gsub(/"/,'&34;')
+title.gsub(/</,'&60;')
+title.gsub(/>/,'&62;')
+title.gsub(/\\/,'&92;')
+title.gsub(/\//,'&47;')
+username = params[:username]
+correctParams = true
+if title.length == 0 || username.length ==0
+  correctParams = false
+end
+
+correctUser = false
+if current_user.username == username
+  correctUser = true
+end
+
+
+file1 = File.new("public/books/books.xml")
+doc1 = REXML::Document.new(file1)
+bookIndex = doc1.root
+
+bookExist = false
+chapterCount=0
+bookIndex.each_element('book') do |books|
+  if books.attributes['name'].delete(' ') == book
+    books.each_element('chapter') do |nothing|
+      chapterCount += 1
+    end
+    bookExist = true
+  end
+end
+
+
+
+if correctUser && correctParams && bookExist
+  chapter = REXML::Element.new("chapter")
+  chapter.add_attribute('number', chapterCount.to_s())
+  chapter.add_attribute('location', 'public/books/'+book+'/'+chapterCount.to_s()+'.xml')
+  bookIndex.each_element_with_attribute('name') do |bookmaybe|
+    if bookmaybe.attributes['name'].delete(' ') == book
+      bookmaybe.add(chapter)
+    end
+  end
+  file = File.new("public/books/books.xml","w")
+  formatter = REXML::Formatters::Default.new
+  formatter.write(doc1,file)
+  file.close
+  
+  newstring = <<EOF
+    <book>
+    </book>
+EOF
+  newdoc = REXML::Document.new newstring
+  chapterFile = REXML::Element.new("chapter")
+  chapterFile.add_attribute('title', title)
+  chapterFile.add_attribute('number', chapterCount.to_s())
+  editors = REXML::Element.new("editors")
+  user = REXML::Element.new("user")
+  user.add_attribute('id',username)
+  editors.add(user)
+  body = REXML::Element.new("body")
+  section = REXML::Element.new("section")
+  section.add_attribute('title', 'Add Section Title')
+  section.add_text('Add Text')
+  body.add(section)
+  chapterFile.add(editors)
+  chapterFile.add(body)
+  newdoc.root.elements["//book"].add(chapterFile)
+  newfile = File.new('public/books/'+book+'/'+chapterCount.to_s()+'.xml','w')
+  newformatter = REXML::Formatters::Default.new
+  newformatter.write(newdoc,newfile)
+  newfile.close
+end
+%>
+
+
+
+<html> 
+<head> 
+<script type="text/javascript"> 
+<!--
+function redirect(){
+	document.location = "/edit/<%=book%>"
+}
+//-->
+</script> 
+</head> 
+<body onLoad="redirect()"></body> 
+</html>
+
+
+
+
+
+

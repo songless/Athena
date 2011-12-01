@@ -1,0 +1,38 @@
+<%= stylesheet_link_tag("main") %>
+<%= stylesheet_link_tag("forums") %>
+
+ <% title "Forums" %>  
+
+<div class="box">  
+ <table border="0">  
+   <tr>  
+     <th width="70%">Forum</th>  
+     <th width="30%">Last Post</th>  
+   </tr>  
+   <% for forum in @forums %>  
+     <tr>  
+       <td><h4><%= link_to h(forum.name), forum_path(forum.id) %></h4>  
+         <small><%= forum.topics.count %> topics</small><br />  
+         <%=h forum.description %></td>
+       <% begin %>  
+       	<td class="right"><% if forum.most_recent_post %>  
+		  <%= distance_of_time_in_words_to_now forum.most_recent_post.last_post_at %> ago by  
+		  <%= link_to forum.most_recent_post.user.username, "/users/#{forum.most_recent_post.last_poster_id}" %>  
+		  <% else %>no posts<% end %>  
+		</td> 
+	<% rescue %>
+	<% end %>
+       <td><%= link_to "Show", forum %></td>  
+       <td><%= link_to "Edit", edit_forum_path(forum) %></td>  
+       <td><%= link_to "Destroy", forum, :confirm => 'Are you sure?', :method => :delete %></td>  
+     </tr>  
+   <% end %>  
+ </table>  
+</div>
+
+<div class="footer">
+<tr>
+ 	<td><%= link_to "Back to Main Site", root_path %></td>
+ 	<td><%= link_to "New Forum", new_forum_path %></td>
+</tr>
+</div>

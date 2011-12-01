@@ -1,0 +1,94 @@
+<%=
+require 'rexml/document'
+title = params[:bookTitle]
+chapterNumber = params[:chapterNumber]
+username = params[:username]
+
+correctUser = false
+if current_user.username == username
+  correctUser = true
+end
+
+file1 = File.new("public/books/books.xml")
+doc1 = REXML::Document.new(file1)
+bookIndex = doc1.root
+
+bookExist = false
+chapterDocs = Hash.new
+chapterLocations = Hash.new
+bookIndex.each_element('book') do |books|
+  if books.attributes['name'].delete(' ') == title
+    bookExist = true
+    books.each_element('chapter') do |chapters|
+      chapterFile = File.new(chapters.attributes['location'])
+      chapterDoc = REXML::Document.new(chapterFile)
+      chapterLocations[chapters.attributes['number']] = chapters.attributes['location']
+      chapterDocs[chapters.attributes['number']] = chapterDoc
+      chapterFile.close
+    end
+  end
+end
+
+
+
+
+if correctUser && bookExist
+  bookIndex.each_element('book') do |bookmaybe|
+    if bookmaybe.attributes['name'].delete(' ') == title
+      chapterCount = 0
+      bookmaybe.each_element('chapter') do |chapter|
+        if chapter.attributes['number'] == chapterNumber
+          bookmaybe.delete_element(chapter)
+        end
+        chapterCount += 1
+      end
+      count=chapterNumber.to_i()
+      (chapterCount - chapterNumber.to_i()-1).times do
+        bookmaybe.each_element('chapter') do |chapter|
+          if chapter.attributes['number'] == (count+1).to_s()
+            chapter.add_attribute('number', count.to_s())
+            chapter.add_attribute('location', 'public/books/'+title+'/'+count.to_s()+'.xml')
+            thisDoc = chapterDocs[(count+1).to_s()]
+            thisLocation = chapterLocations[(count+1).to_s()]
+            thisDoc.root.elements["//chapter"].add_attribute('number',count.to_s())
+            file = File.new('public/books/'+title+'/'+count.to_s()+'.xml',"w")
+            formatter = REXML::Formatters::Default.new
+            formatter.write(thisDoc,file)
+            file.close
+          end
+        end     
+        count += 1
+      end
+    end
+  end
+  file = File.new("public/books/books.xml","w")
+  formatter = REXML::Formatters::Default.new
+  formatter.write(doc1,file)
+  file.close
+end
+%>
+
+
+
+
+
+
+
+
+
+<html> 
+<head> 
+<script type="text/javascript"> 
+<!--
+function redirect(){
+	document.location = "/edit/<%=title%>"
+}
+//-->
+</script> 
+</head> 
+<body onLoad="redirect()"></body> 
+</html>
+
+
+
+

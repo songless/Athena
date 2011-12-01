@@ -1,0 +1,58 @@
+<%
+require 'rexml/document'
+title = params[:bookTitle]
+username = params[:username]
+
+correctUser = false
+if current_user.username == username
+  correctUser = true
+end
+
+file1 = File.new("public/books/books.xml")
+doc1 = REXML::Document.new(file1)
+bookIndex = doc1.root
+
+bookExist = false
+bookIndex.each_element('book') do |books|
+  if books.attributes['name'].delete(' ') == title
+    bookExist = true
+  end
+end
+
+if correctUser && bookExist
+  bookIndex.each_element('book') do |bookmaybe|
+    if bookmaybe.attributes['name'].delete(' ') == title
+      bookIndex.delete_element(bookmaybe)
+    end
+  end
+  file = File.new("public/books/books.xml","w")
+  formatter = REXML::Formatters::Default.new
+  formatter.write(doc1,file)
+  file.close
+end
+%>
+
+
+
+
+
+
+
+
+
+<html> 
+<head> 
+<script type="text/javascript"> 
+<!--
+function redirect(){
+	document.location = "/edit"
+}
+//-->
+</script> 
+</head> 
+<body onLoad="redirect()"></body> 
+</html>
+
+
+
+

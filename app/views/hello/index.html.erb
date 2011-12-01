@@ -1,0 +1,379 @@
+<%
+  require 'rexml/document'
+
+  ####initializes bookTitles
+  file1 = File.new("public/books/books.xml")
+  doc1 = REXML::Document.new(file1)
+  bookIndex = doc1.root
+  bookTitles = Hash.new
+  imgLocations = Hash.new
+  authors = Hash.new
+  isbns = Hash.new
+  count = 0
+  bookIndex.each_element('book') do |books|
+    bookTitles[count] = books.attributes['name']
+    imgLocations[bookTitles[count]] = books.attributes['thumbnail']
+    authors[bookTitles[count]] = books.attributes['author']
+    isbns[bookTitles[count]] = books.attributes['isbn']
+    count += 1
+  end
+  books = Hash.new
+  count = 0
+  bookTitles.sort
+
+%>
+
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title> Athena </title>
+<link rel="SHORTCUT ICON" href="athena.ico"/>
+
+<%= stylesheet_link_tag("main") %>
+<script type="text/javascript" src="javascripts/jquery.js"></script>
+
+<style type="text/css">
+
+div.menu {
+  position: relative;
+  height: 300px;
+  width: 680px;
+  overflow: auto;
+}
+ul.menu {
+  display: block;
+  height: 110px;
+  width: 1500px;
+  padding: 15px 0 0 15px;
+  margin: 0;
+  background: url('navigation.png');
+  list-style: none;
+}
+.menu li {
+  display: block;
+  float: left;
+  padding: 0 4px;
+}
+.menu a {
+  display: block;
+  text-decoration: none;
+}
+.menu span {
+  display: block;
+  margin-top: 3px;
+  text-align: center;
+  font-size: 12px;
+  color: #fff;
+}
+
+.menu span {
+  display: none;
+  margin-top: 3px;
+  text-align: center;
+  font-size: 12px;
+  color: #fff;
+}
+.menu a:hover span {
+  display: block;
+}
+.menu img {
+  border: 3px #fff solid;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+}
+.menu a:hover img {
+  filter:alpha(opacity=50);
+  opacity: 0.5;
+}
+
+</style>
+</head>
+<body>
+<% @page_title = "Athena" %>
+<div class="header">
+<table align="left" border="0" cellspacing="0" cellpadding="1">
+<tr>
+<td>
+	Follow us on: 
+</td>
+<td>
+	<a href=http://twitter.com/athenabooks> Twitter <img src="images/twitter.png" class="texttop" /><a/> 
+</td>
+</tr>
+</table>
+
+<table align="right" border="0" cellspacing="0" cellpadding="1">
+<tr>	
+	<td id="fader">
+		<%- flash.each do |name, msg| -%>
+			<%= content_tag :div, msg, :id => "flash_#{name}" %>
+		<%- end -%>
+	</td>
+
+	<% if current_user %>
+		<td>
+			<a href="http://blastech.physics.tamu.edu/edit">Edit Books</a> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>		
+		<td>
+			<%= link_to "Logout", logout_path %>
+		</td>
+	<% else %>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>	
+		<td>
+			<%= link_to "Register", new_user_path %> | 
+		</td>
+		<td>
+			<%= link_to "Login", login_path %>
+		</td>
+	<% end %>
+<td>
+	<!-- AddThis Button BEGIN -->
+	<div class="addthis_toolbox addthis_default_style ">
+		<a href="http://www.addthis.com/bookmark.php?v=250&amp;username=xa-4cf2b3af0987a03e" class="addthis_button_compact">Share</a>
+		<span class="addthis_separator">|</span>
+			<a class="addthis_button_preferred_1"></a>
+			<a class="addthis_button_preferred_2"></a>
+			<a class="addthis_button_preferred_3"></a>
+			<a class="addthis_button_preferred_4"></a>
+	</div>
+	<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4cf2b3af0987a03e"></script>
+ 	<!-- AddThis Button END -->
+</td>
+</tr>
+</table>
+</div>
+<p>
+<div class="box">
+
+	<img src="images/logo2.png" class="textmiddle" align="left" padding-left="50px" />
+	<center>
+		<h1>Athena</h1>
+		<div style="font-style: italic;">
+			<p>Because knowledge is power
+		</div>
+	</center>
+</div>
+<p>
+	
+<div class="search" >
+	<center>
+		<h2>I'm looking for </h2>
+		<% form_for :hello do |f| %>
+			<p>
+				<%= f.text_field :search %>
+			</p>		
+ 			<p><%= submit_tag "Search" %></p>
+		<% end %>
+	</center>
+</div>
+
+<p>
+<div class="part">
+	<div class="box">
+		<h3> What is Athena? </h3>
+		<ul id="fade">
+			<li>
+				All the books you want to read, free and editable.
+			</li>
+			<li>
+				Media rich books with pictures, videos, and embedded content.	
+			</li> 
+			<li>
+				Discussions about all your favorite books.
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div class="part"> 
+	<div class="box">
+        	Top Books:
+		<ul id="gallery">
+			<%=
+           		output = ""		
+			bookTitles.values.slice(0,5).each do |bookTitle|
+				output += '<li id="chain"><a href="/books/' + bookTitle.delete(' ') + '">' + bookTitle + '</li></a>'
+			end
+			output
+			%>
+
+		</ul>
+	</div>
+</div>
+
+<div class="part">
+	<div class="box">
+		Top Authors:
+		<ul id="gallery">
+			<%=
+           			output = ""		
+				authors.values.slice(0,5).each do |author|
+					output += '<li id="chain2">' + author + '</li>'
+				end
+				output
+			%>
+		</ul>
+	</div>
+</div>
+<p>
+<div style="overflow: hidden;" class="menu">
+	<ul class="menu">
+           <%=
+           output = ""
+           bookTitles.each_value do |bookTitle|
+             output += '<li><a href="/books/' + bookTitle.delete(' ') + '"><img alt="Book-blue" src="' + imgLocations[bookTitle] + '"><span>' + bookTitle + '<br>' + authors[bookTitle] +'<br>' + isbns[bookTitle] + '</span>'
+           end
+           output
+           %>
+	</ul>
+</div>
+
+<div class="footer">
+	<table align="center" border="0" cellspacing="0" cellpadding="1">
+		<tr>
+			<td>
+				 &copy; 2010 Athena - free books for all of the world since 2010. <%= link_to "Privacy Policy", privacy_path %> | <%= link_to "Terms of Use", terms_path %>
+			</td>
+		</tr>
+	</table>
+</div>
+
+<script type="text/javascript">
+
+// used to fade in the text on initial load
+$(document).ready(function() {
+
+	// fade in the description of athena
+	$('#fade').hide();
+	$('#fade').fadeIn(3600);
+
+	$("#flash_notice").slideUp(1000);
+
+	var str = $("#flash_notice").text();
+	if( str == "Successfully logged in." ||  str == "Registration successful." || str == "Successfully logged out." )
+	{
+		$('.check').hide();
+	}
+
+	//hide options
+	var str = $('.check').text();
+	if( str == 'no books found matching your query')
+	{
+		$('#fader').hide();
+		$('.results').hide();
+		$('.grow').hide();
+		$('.shrink').hide();
+	}
+
+	else
+	{
+		$('#fader').hide();
+		$('.results').show();
+	}
+	
+	// fade flashed messages out over time
+	$('#fader').fadeOut(1000);
+
+	// hide the chains so we can display them
+	$('#gallery #chain').hide();
+	$('#gallery #chain2').hide();
+
+	// begin recursive chainload
+	fadeUpR($("#chain:first"));
+	fadeUpR($("#chain2:first"));
+
+});
+
+// create the cool book gallery effect
+$(function(){
+    //Get our elements for faster access and set overlay width
+    var div = $('div.menu'),
+                 ul = $('ul.menu'),
+                 // unordered list's left margin
+                 ulPadding = 15;
+
+    //Get menu width
+    var divWidth = div.width();
+
+    //Remove scrollbars
+    div.css({overflow: 'hidden'});
+
+    //Find last image container
+    var lastLi = ul.find('li:last-child');
+
+    //When user move mouse over menu
+    div.mousemove(function(e){
+
+      //As images are loaded ul width increases,
+      //so we recalculate it each time
+      var ulWidth = lastLi[0].offsetLeft + lastLi.outerWidth() + ulPadding;
+
+      var left = (e.pageX - div.offset().left) * (ulWidth-divWidth) / divWidth;
+      div.scrollLeft(left);
+    });
+});
+
+// to chainload list elements
+function fadeUpR(e){
+
+ 	$(e).fadeIn(500, function(){
+	
+		if($(e).next("#chain").length != 0){
+			fadeUpR($(e).next("#chain"));
+		}
+	}); 
+
+	$(e).fadeIn(500, function(){
+	
+		if($(e).next("#chain2").length != 0){
+			fadeUpR($(e).next("#chain2"));
+		}
+	}); 
+}
+
+// expands search results
+$(".grow").click( function (e) {
+	
+		var target = $('.search')
+		, boxHeight = target.height();
+	
+		//if( boxHeight == 75 )
+		//{
+			$('.search').animate({
+   				 height: '+=250'
+  				}, 200, function() {
+			});
+
+			$('.results').fadeIn(500);
+
+		//}
+});
+
+// hides search results
+$(".shrink").click( function (e) {
+	
+		var target = $('.search')
+		, boxHeight = target.height();
+	
+		//if( boxHeight == 325 )
+		//{
+			$('.search').animate({
+   				 height: '-=250'
+  				}, 200, function() {
+			});
+
+			$('.results').fadeOut(100);
+		//}
+});	
+				
+
+</script>
+
+</body>
+</html>

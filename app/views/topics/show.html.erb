@@ -1,0 +1,23 @@
+<% title "Topic" %>
+
+<p>
+  <strong>Name:</strong>
+  <%=h @topic.name %>
+</p>
+<p>
+  <strong>Last Poster:</strong>
+  <%=h @topic.last_poster_id %>
+</p>
+<p>
+  <% begin%>
+      <strong>Last Post At:</strong>
+      <%=h @topic.last_post_at %>
+  <% rescue %>
+  <% end %>
+</p>
+
+<p>
+  <%= link_to "Edit", edit_topic_path(@topic) %> |
+  <%= link_to "Destroy", @topic, :confirm => 'Are you sure?', :method => :delete %> |
+  <%= link_to "View All", topics_path %>
+</p>

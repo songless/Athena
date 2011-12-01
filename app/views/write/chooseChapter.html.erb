@@ -1,0 +1,207 @@
+<%
+  require 'rexml/document'
+  book = params[:bookNames]
+  badUser = false
+  begin
+    usernameUser = current_user.username
+  rescue Exception
+    badUser = true
+  end
+  ####initializes bookMatch, bookTitle, chapterFiles
+  file1 = File.new("public/books/books.xml")
+  doc1 = REXML::Document.new(file1)
+  bookIndex = doc1.root
+  chapterFiles = Hash.new
+  bookTitle = ""
+  bookMatch = false
+  permissionMatch = false
+  authorMatch = false
+  bookIndex.each_element('book') do |books|
+    if books.attributes['name'].delete(' ') == book
+      books.elements['editors'].each_element('user') do |user|
+        if user.attributes['id'] == usernameUser
+          permissionMatch = true
+        end
+      end
+      authorMatch = books.attributes['author'] == usernameUser
+      books.each_element('chapter') do |chapters|
+        chapterFile = File.new(chapters.attributes['location'])
+        chapterDoc = REXML::Document.new(chapterFile)
+        root = chapterDoc.root
+        chapterFiles[chapters.attributes['number']] = root
+      end
+      chapterFiles.sort
+      bookMatch = true
+      bookTitle = books.attributes['name']
+    end
+  end
+%>
+
+
+
+<%= stylesheet_link_tag("main") %>
+<script src="http://code.jquery.com/jquery-1.4.4.js"></script>
+
+<%=
+output=""
+if badUser
+  output  = '<script type="text/javascript">'
+  output += 'window.onload = function () {'
+  output += 'document.write("");document.location = "/edit"} </script>'
+end
+output
+%>
+
+<head><title><%= bookTitle %></title><link rel="SHORTCUT ICON" href="/athena.ico"/></head>
+<div class="header">
+<table align="left" border="0" cellspacing="0" cellpadding="1">
+<tr>
+<td>
+	Follow us on: 
+</td>
+<td>
+	<a href=http://twitter.com/athenabooks> Twitter <img src="/images/twitter.png" class="texttop" /><a/> 
+</td>
+</tr>
+</table>
+
+<table align="right" border="0" cellspacing="0" cellpadding="1">
+<tr>	
+	<td id="fader">
+		<%- flash.each do |name, msg| -%>
+			<%= content_tag :div, msg, :id => "flash_#{name}" %>
+		<%- end -%>
+	</td>
+
+	<% if !badUser %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>		
+		<td>
+			<%= link_to "Logout", logout_path %>
+		</td>
+	<% else %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>	
+		<td>
+			<%= link_to "Register", new_user_path %> | 
+		</td>
+		<td>
+			<%= link_to "Login", login_path %>
+		</td>
+	<% end %>
+<td>
+	<!-- AddThis Button BEGIN -->
+
+	<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4cf2b3af0987a03e"></script>
+ 	<!-- AddThis Button END -->
+</td>
+</tr>
+</table>
+</div>
+<Br>
+<div class= "boxbruce">
+
+<%=  ####Print Book Name
+if bookMatch
+  output = '<h1 align="center">'+bookTitle+'</h1>'
+else
+  output = "Book Does Not Exist"
+end
+output
+%>
+
+<%=  ####Print Chapter Titles and link to them
+chapterTitles = '<h2>Chapters</h2>'
+if bookMatch && permissionMatch
+  chapterFiles.each_value do |chapterRoot|
+    chapterRoot.each_element('chapter') do |check|
+      chapterNumber = check.attributes['number'] + '. '
+      if chapterNumber == '0. '
+        chapterTitles += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+        chapterNumber = ''
+      else
+        chapterTitles += '<a href="javascript:deleteBook(' + "'" + check.attributes['number'] + "'" + ');">Delete</a>&nbsp;&nbsp;&nbsp;&nbsp;'
+      end
+      if false
+        chapterTitles += '<a href="javascript:updatePermissions(' + "'" + check.attributes['number'] + "'" + ');">Permissions</a>&nbsp;&nbsp;&nbsp;&nbsp;'
+      end
+      chapterTitles += '<a href="/edit/' + book + '/' + check.attributes['number'] + '/">' + chapterNumber + check.attributes['title'] + '</a><br>'
+    end
+  end
+elsif !permissionMatch
+  chapterTitles = '<br><br>You do not have access to edit this book.<br>'
+end
+if chapterTitles == '<h2>Chapters</h2>'
+  chapterTitles = 'This book has no chapters.'
+end
+
+if authorMatch
+  chapterTitles += '<br><br>Create New Chapter:<br>'
+  chapterTitles += '<form name="newBook" action="/create/newChapter/' + book + '" method="post">'
+  chapterTitles += '<input type="text" name="title" />Title<br>'
+  chapterTitles += '<input type="hidden" name="username" value="' + usernameUser + '"/>'
+  chapterTitles += '<input type="submit" value="Submit" /></form>'
+end
+
+chapterTitles
+%>
+
+<br>
+<a href="/edit">Back to Book List</a>
+
+</div>
+
+
+
+
+
+<script type="text/javascript">
+
+function deleteBook(chapterNumber){
+  chapterBody  = "<input type=\"hidden\" name=\"bookTitle\" value=\"<%=book%>\" />"
+  chapterBody += "<input type=\"hidden\" name=\"chapterNumber\" value=\"" + chapterNumber + "\" />"
+  chapterBody += "<input type=\"hidden\" name=\"username\" value=\"<%=usernameUser%>\" />"
+  $(chapterBody).insertAfter("#formAdd")
+
+  document.deleteChapterForm.submit();
+}
+
+function updatePermissions(chapterNumber){
+  chapterBody  = "<input type=\"hidden\" name=\"bookTitle\" value=\"<%=book%>\" />"
+  chapterBody += "<input type=\"hidden\" name=\"chapterNumber\" value=\"" + chapterNumber + "\" />"
+  chapterBody += "<input type=\"hidden\" name=\"username\" value=\"<%=usernameUser%>\" />"
+  document.permissions.submit();
+}
+</script>
+
+
+<div id="formwrapper">
+<form action="/delete/oldChapter" method="post" name="deleteChapterForm">
+<div id="formAdd"></div>
+</form>
+</div>
+
+
+<form action="/update/permissions" method="post" name="permissions">
+<div id="updatePermissions"></div>
+</form>
+
+
+<br>
+<div class="footer">
+	<table align="center" border="0" cellspacing="0" cellpadding="1">
+		<tr>
+			<td>
+				 &copy; 2010 Athena - free books for all of the world since 2010. <%= link_to "Privacy Policy", privacy_path %> | <%= link_to "Terms of Use", terms_path %>
+			</td>
+		</tr>
+	</table>
+</div>

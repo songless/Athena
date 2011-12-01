@@ -1,0 +1,113 @@
+<%
+  require 'rexml/document'
+  book = params[:bookNames]
+  
+  ####initializes bookMatch, bookTitle, chapterFiles
+  file1 = File.new("public/books/books.xml")
+  doc1 = REXML::Document.new(file1)
+  bookIndex = doc1.root
+  chapterFiles = Hash.new
+  bookTitle = ""
+  bookMatch = false
+  permissionMatch = false
+  authorMatch = false
+  bookIndex.each_element('book') do |books|
+    if books.attributes['name'].delete(' ') == book
+      books.elements['editors'].each_element('user') do |user|
+        if user.attributes['id'] == current_user.username
+          permissionMatch = true
+        end
+      end
+      authorMatch = books.attributes['author'] == current_user.username
+      books.each_element('chapter') do |chapters|
+        chapterFile = File.new(chapters.attributes['location'])
+        chapterDoc = REXML::Document.new(chapterFile)
+        root = chapterDoc.root
+        chapterFiles[chapters.attributes['number']] = root
+      end
+      chapterFiles.sort
+      bookMatch = true
+      bookTitle = books.attributes['name']
+    end
+  end
+%>
+
+
+
+<%= stylesheet_link_tag("main") %>
+<script src="http://code.jquery.com/jquery-1.4.4.js"></script>
+
+
+<head><title><%= bookTitle %></title></head>
+
+<div class= "boxbruce">
+
+<%=  ####Print Book Name
+if bookMatch
+  output = '<h1 align="center">'+bookTitle+'</h1>'
+else
+  output = "Book Does Not Exist"
+end
+output
+%>
+
+<%=  ####Print Chapter Titles and link to them
+chapterTitles = '<h2>Chapters</h2>'
+if bookMatch && permissionMatch
+  chapterFiles.each_value do |chapterRoot|
+    chapterRoot.each_element('chapter') do |check|
+      chapterNumber = check.attributes['number'] + '. '
+      if chapterNumber == '0. '
+        chapterTitles += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+        chapterNumber = ''
+      else
+        chapterTitles += '<a href="javascript:deleteBook(' + "'" + check.attributes['number'] + "'" + ');">Delete</a>&nbsp;&nbsp;&nbsp;&nbsp;'
+      end
+      chapterTitles += '<a href="/edit/' + book + '/' + check.attributes['number'] + '/">' + chapterNumber + check.attributes['title'] + '</a><br>'
+    end
+  end
+elsif !permissionMatch
+  chapterTitles = 'You do not have access to edit this book.<br>'
+end
+if chapterTitles == '<h2>Chapters</h2>'
+  chapterTitles = 'This book has no chapters.'
+end
+
+if authorMatch
+  chapterTitles += '<br><br>Create New Chapter:<br>'
+  chapterTitles += '<form name="newBook" action="/create/newChapter/' + book + '" method="post">'
+  chapterTitles += '<input type="text" name="title" />Title<br>'
+  chapterTitles += '<input type="hidden" name="username" value="' + current_user.username + '"/>'
+  chapterTitles += '<input type="submit" value="Submit" /></form>'
+end
+
+chapterTitles
+%>
+
+<br>
+<a href="/edit">Back to Book List</a>
+
+</div>
+
+
+
+
+
+
+
+<script type="text/javascript">
+
+function deleteBook(chapterNumber){
+  chapterBody  = "<input type=\"hidden\" name=\"chapterNumber\" value=\"" + chapterNumber + "\" />"
+  chapterBody  = "<input type=\"hidden\" name=\"bookTitle\" value=\"<%=book%>\" />"
+  chapterBody += "<input type=\"hidden\" name=\"username\" value=\"<%=current_user.username%>\" />"
+  $(chapterBody).insertAfter("#formAdd")
+  document.deleteBookForm.submit();
+}
+</script>
+<div id="formwrapper">
+<form action="/delete/oldChapter" method="post" name="deleteBookForm">
+<div id="formAdd"></div>
+</form>
+</div>
+

@@ -1,0 +1,87 @@
+<%
+require 'rexml/document'
+titles = Hash.new
+bodys = Hash.new
+count = 0;
+while(params["title"+count.to_s()])
+  titles[count.to_s()] = params["title"+count.to_s()]
+  bodys[count.to_s()] = params["body"+count.to_s()]
+  count += 1
+end
+
+
+
+
+book = params[:bookNames]
+chapter = params[:chapter]
+
+
+####initializes bookMatch, bookTitle, chapterFiles
+file1 = File.new("public/books/books.xml")
+doc1 = REXML::Document.new(file1)
+bookIndex = doc1.root
+chapterFiles = Hash.new
+fileLocation = ""
+bookTitle = ""
+bookMatch = false
+bookIndex.each_element('book') do |books|
+  if books.attributes['name'].delete(' ') == book
+    books.each_element('chapter') do |chapters|
+      chapterFile = File.new(chapters.attributes['location'])
+      chapterDoc = REXML::Document.new(chapterFile)
+      if chapters.attributes['number'] == chapter
+        fileLocation = chapters.attributes['location']
+        doc1 = chapterDoc
+      end
+      root = chapterDoc.root
+      chapterFiles[chapters.attributes['number']] = root
+      chapterFile.close
+    end
+    chapterFiles.sort
+    bookMatch = true
+    bookTitle = books.attributes['name']
+  end
+end
+
+
+while (!chapterFiles[chapter].elements["//section"].nil?)
+  chapterFiles[chapter].delete_element("//section")
+end
+count = 0
+while (!titles[count.to_s()].nil?)
+  sect = REXML::Element.new("section")
+  #sect.add_text(bodys[count.to_s()])
+  sect.add_text(bodys[count.to_s()])
+  sect.add_attribute( 'title', titles[count.to_s()] )  
+  chapterFiles[chapter].elements["//body"].add(sect)
+  count += 1
+end
+
+chapterFiles[chapter].elements["//chapter"].add_attribute('title',params[:titleOfChapter])
+
+file = File.new(fileLocation,"w")
+formatter = REXML::Formatters::Default.new
+formatter.write(doc1,file)
+file.close
+%>
+
+
+
+<html> 
+<head> 
+<script type="text/javascript"> 
+<!--
+function redirect(){
+	document.location = "/edit/<%=book%>/<%=chapter%>"
+}
+//-->
+</script> 
+</head> 
+<body onLoad="redirect()"></body> 
+</html>
+
+
+
+
+
+

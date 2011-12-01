@@ -1,0 +1,131 @@
+<%
+  require 'rexml/document'
+  book = params[:bookNames]
+
+
+  ####initializes bookMatch, bookTitle, chapterFiles
+  file1 = File.new("public/books/books.xml")
+  doc1 = REXML::Document.new(file1)
+  bookIndex = doc1.root
+  chapterFiles = Hash.new
+  bookTitle = ""
+  bookMatch = false
+  bookIndex.each_element('book') do |books|
+    if books.attributes['name'].delete(' ') == book
+      books.each_element('chapter') do |chapters|
+        chapterFile = File.new(chapters.attributes['location'])
+        chapterDoc = REXML::Document.new(chapterFile)
+        root = chapterDoc.root
+        chapterFiles[chapters.attributes['number']] = root
+      end
+      chapterFiles.sort
+      bookMatch = true
+      bookTitle = books.attributes['name']
+    end
+  end
+  
+  
+%>
+
+<%= stylesheet_link_tag("main") %>
+
+
+
+<head><title><%= bookTitle %></title><link rel="SHORTCUT ICON" href="/athena.ico"/></head>
+<div class="header">
+<table align="left" border="0" cellspacing="0" cellpadding="1">
+<tr>
+<td>
+	Follow us on: 
+</td>
+<td>
+	<a href=http://twitter.com/athenabooks> Twitter <img src="/images/twitter.png" class="texttop" /><a/> 
+</td>
+</tr>
+</table>
+
+<table align="right" border="0" cellspacing="0" cellpadding="1">
+<tr>	
+	<td id="fader">
+		<%- flash.each do |name, msg| -%>
+			<%= content_tag :div, msg, :id => "flash_#{name}" %>
+		<%- end -%>
+	</td>
+
+	<% if current_user %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>		
+		<td>
+			<%= link_to "Logout", logout_path %>
+		</td>
+	<% else %>
+		<td>
+			<%= link_to "Home", root_path %> |
+		</td>
+		<td>
+			<%= link_to "Forums", forums_path %> | 
+		</td>	
+		<td>
+			<%= link_to "Register", new_user_path %> | 
+		</td>
+		<td>
+			<%= link_to "Login", login_path %>
+		</td>
+	<% end %>
+<td>
+	<!-- AddThis Button BEGIN -->
+
+	<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4cf2b3af0987a03e"></script>
+ 	<!-- AddThis Button END -->
+</td>
+</tr>
+</table>
+</div>
+<Br>
+<div class= "boxbruce">
+
+<%=  ####Print Book Name
+if bookMatch
+  output = '<h1 align="center">'+bookTitle+'</h1>'
+else
+  output = "Book Does Not Exist"
+end
+output
+%>
+
+<%=  ####Print Chapter Titles and link to them
+chapterTitles = '<h2>Chapters</h2>'
+if bookMatch
+  chapterFiles.each_value do |chapterRoot|
+    chapterRoot.each_element('chapter') do |check|
+      chapterNumber = check.attributes['number'] + '. '
+      if chapterNumber == '0. '
+        chapterNumber = ''
+      end
+      chapterTitles += '<a href="/books/' + book + '/' + check.attributes['number'] + '">' + chapterNumber + check.attributes['title'] + '</a><br>'
+    end
+  end
+else
+  chapterTitles = ''
+end
+if chapterTitles == '<h2>Chapters</h2>'
+  chapterTitles = 'This book has no chapters.'
+end
+chapterTitles
+%>
+<br><a href="/books">Back to Book List</a>
+</div>
+<br>
+<div class="footer">
+	<table align="center" border="0" cellspacing="0" cellpadding="1">
+		<tr>
+			<td>
+				 &copy; 2010 Athena - free books for all of the world since 2010. <%= link_to "Privacy Policy", privacy_path %> | <%= link_to "Terms of Use", terms_path %>
+			</td>
+		</tr>
+	</table>
+</div>
